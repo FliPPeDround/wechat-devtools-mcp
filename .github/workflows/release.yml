@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Setup JS
+        uses: sxzz/workflows/setup-js@v1
+        with:
+          fetch-all: true
+
+      - name: Generate GitHub Changelog
+        run: pnpx changelogithub
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Detect Version Type
+        id: detect_version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [[ "$VERSION" =~ -[a-zA-Z] ]]; then
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            if [[ "$VERSION" =~ -beta ]]; then
+              echo "tag=beta" >> $GITHUB_OUTPUT
+            elif [[ "$VERSION" =~ -alpha ]]; then
+              echo "tag=alpha" >> $GITHUB_OUTPUT
+            elif [[ "$VERSION" =~ -rc ]]; then
+              echo "tag=rc" >> $GITHUB_OUTPUT
+            else
+              echo "tag=next" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          fi
+          echo "Version: $VERSION"
+
+      - name: Display Version Info
+        run: |
+          echo "Version: $(node -p "require('./package.json').version")"
+          echo "Is Prerelease: ${{ steps.detect_version.outputs.is_prerelease }}"
+          echo "Tag: ${{ steps.detect_version.outputs.tag }}"
+
+      - name: Publish to NPM
+        run: pnpm publish --access public --no-git-checks --tag ${{ steps.detect_version.outputs.tag }}

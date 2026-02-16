@@ -1,0 +1,85 @@
+{
+  "name": "wechat-devtools-mcp",
+  "type": "module",
+  "version": "0.0.7",
+  "packageManager": "pnpm@10.6.2",
+  "description": "微信开发者工具自动化的MCP服务",
+  "author": "FliPPeDround <flippedround@qq.com>",
+  "license": "MIT",
+  "funding": "https://afdian.com/a/flippedround",
+  "homepage": "https://github.com/flippedround/wechat-devtools-mcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/flippedround/wechat-devtools-mcp.git"
+  },
+  "bugs": "https://github.com/flippedround/wechat-devtools-mcp/issues",
+  "keywords": [
+    "uni",
+    "uni-app",
+    "uni-helper",
+    "wechat-devtools",
+    "devtools",
+    "wechat",
+    "mcp",
+    "ai",
+    "agent",
+    "miniapp"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "bin": {
+    "wechat-devtools-mcp": "./dist/index.mjs"
+  },
+  "files": [
+    "dist",
+    "scripts",
+    "vectorStore"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch ./src",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "play": "cd playground && pnpm dev",
+    "inspect": "mcp-inspector",
+    "prepublishOnly": "pnpm build",
+    "release": "bumpp",
+    "test": "vitest",
+    "prepare": "simple-git-hooks"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^7.0.1",
+    "@antfu/utils": "^9.3.0",
+    "@modelcontextprotocol/inspector": "^0.18.0",
+    "@modelcontextprotocol/sdk": "^1.25.2",
+    "@modelcontextprotocol/server-filesystem": "^2026.1.14",
+    "@types/debug": "^4.1.12",
+    "@types/minimist": "^1.2.5",
+    "@types/node": "^25.0.8",
+    "bumpp": "^10.4.0",
+    "debug": "^4.4.3",
+    "eslint": "^9.39.2",
+    "lint-staged": "^16.2.7",
+    "minimist": "^1.2.8",
+    "miniprogram-automator": "^0.12.1",
+    "simple-git-hooks": "^2.13.1",
+    "tsdown": "^0.20.0-beta.3",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.17",
+    "vitest-package-exports": "^1.1.2",
+    "zod": "^4.3.5"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm i --frozen-lockfile --ignore-scripts --offline && npx lint-staged"
+  },
+  "lint-staged": {
+    "*": "eslint --fix"
+  }
+}
