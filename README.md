@@ -1,1 +1,1 @@
-#[WIP] wechat-devtools-mcp
+# [WIP] wechat-devtools-mcp
