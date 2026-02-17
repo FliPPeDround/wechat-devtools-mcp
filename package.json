@@ -47,37 +47,28 @@
     "dev": "tsdown --watch ./src",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "play": "cd playground && pnpm dev",
     "inspect": "mcp-inspector",
     "prepublishOnly": "pnpm build",
     "release": "bumpp",
-    "test": "vitest",
     "prepare": "simple-git-hooks"
   },
   "dependencies": {
-    "miniprogram-automator": "^0.12.1",
-    "miniprogram-mp-ci": "^1.0.7"
+    "miniprogram-automator": "^0.12.1"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^7.0.1",
     "@antfu/utils": "^9.3.0",
     "@modelcontextprotocol/inspector": "^0.18.0",
     "@modelcontextprotocol/sdk": "^1.25.2",
-    "@modelcontextprotocol/server-filesystem": "^2026.1.14",
-    "@types/debug": "^4.1.12",
     "@types/minimist": "^1.2.5",
     "@types/node": "^25.0.8",
     "bumpp": "^10.4.0",
-    "debug": "^4.4.3",
     "eslint": "^9.39.2",
     "lint-staged": "^16.2.7",
     "minimist": "^1.2.8",
     "simple-git-hooks": "^2.13.1",
-    "tinyexec": "^1.0.2",
     "tsdown": "^0.20.0-beta.3",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.17",
-    "vitest-package-exports": "^1.1.2",
     "zod": "^4.3.5"
   },
   "simple-git-hooks": {
