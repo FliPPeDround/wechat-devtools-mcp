@@ -39,3 +39,11 @@
 | `--account` | string | 用户 openid |
 | `--ticket` | string | 开发者工具登录票据 |
 | `--projectConfig` | string | 覆盖 project.config.json 中的配置 |
+
+## 🙇🏻‍♂️[赞助](https://afdian.com/a/flippedround)
+
+<p align="center">
+  <a href="https://afdian.com/a/flippedround">
+    <img alt="sponsors" src="https://cdn.jsdelivr.net/gh/FliPPeDround/sponsors/sponsorkit/sponsors.svg"/>
+  </a>
+</p>
