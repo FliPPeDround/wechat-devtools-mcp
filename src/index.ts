@@ -2,18 +2,19 @@
 
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { parseArguments } from '@/utils/parseArguments'
-import { Automator } from './automator'
+import { registerSystemPrompt } from './prompt'
 import { createMcpServer } from './server'
 import { registerTools } from './tools'
+import { Automator } from './tools/Automator'
 
 async function main() {
-  const argv = parseArguments()
-  const { cliPath, projectPath } = argv
-  const automator = new Automator({ cliPath, projectPath })
-  const miniProgram = await automator.launch()
-
+  const options = parseArguments()
   const server = await createMcpServer()
-  registerTools(miniProgram, server)
+  registerSystemPrompt(server)
+
+  new Automator(options, server)
+
+  registerTools(server, options.port)
 
   const transport = new StdioServerTransport()
   await server.connect(transport)

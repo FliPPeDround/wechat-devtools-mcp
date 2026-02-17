@@ -1,13 +1,19 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import type Element from 'miniprogram-automator/out/Element'
-import type MiniProgram from 'miniprogram-automator/out/MiniProgram'
+import automator from 'miniprogram-automator'
 import z from 'zod'
 
 export class PageTool {
-  constructor(private miniProgram: MiniProgram, private server: McpServer) {}
+  constructor(private server: McpServer, private port: number) {}
 
   private async _getCurrentPage() {
-    const page = await this.miniProgram.currentPage()
+    const miniProgram = await automator.connect({
+      wsEndpoint: `ws://localhost:${this.port}`,
+    })
+    if (!miniProgram) {
+      throw new Error('请先使用 launch 工具启动并连接开发者工具，才能进行后续操作')
+    }
+    const page = await miniProgram.currentPage()
     if (!page) {
       throw new Error('当前没有打开的页面')
     }
@@ -18,10 +24,10 @@ export class PageTool {
     this.server.registerTool(
       'getElement',
       {
-        title: 'getElement',
-        description: '获取小程序页面元素',
+        title: '获取页面元素',
+        description: '获取小程序当前页面中匹配指定选择器的第一个元素。可用于获取元素信息、进行元素操作或验证页面渲染结果。',
         inputSchema: {
-          selector: z.string().describe('元素选择器'),
+          selector: z.string().describe('元素选择器，支持 CSS 选择器语法，如 .classname、#id、view'),
         },
       },
       async ({ selector }) => {
@@ -40,10 +46,10 @@ export class PageTool {
     this.server.registerTool(
       'getElements',
       {
-        title: 'getElements',
-        description: '获取小程序页面元素数组',
+        title: '获取页面元素列表',
+        description: '获取小程序当前页面中匹配指定选择器的所有元素，返回元素数组。常用于获取列表项、批量操作元素或验证页面中同类元素的数量。',
         inputSchema: {
-          selector: z.string().describe('元素选择器'),
+          selector: z.string().describe('元素选择器，支持 CSS 选择器语法，如 .list-item、view'),
         },
       },
       async ({ selector }) => {
@@ -62,10 +68,10 @@ export class PageTool {
     this.server.registerTool(
       'waitFor',
       {
-        title: 'waitFor',
-        description: '等待直到指定条件成立',
+        title: '等待条件满足',
+        description: '等待页面中某个条件成立后再继续执行。条件可以是选择器（等待元素出现）、函数返回值或布尔值。常用于等待异步渲染、动画完成或数据加载。',
         inputSchema: {
-          condition: z.any().describe('等待条件'),
+          condition: z.any().describe('等待条件，支持选择器字符串或返回布尔值的函数'),
         },
       },
       async ({ condition }) => {
@@ -84,10 +90,10 @@ export class PageTool {
     this.server.registerTool(
       'getPageData',
       {
-        title: 'getPageData',
-        description: '获取页面渲染数据',
+        title: '获取页面数据',
+        description: '获取当前页面实例的 data 数据，即页面渲染层（View）使用的数据。可用于验证页面状态、检查数据绑定或读取业务数据。',
         inputSchema: {
-          path: z.string().optional().describe('数据路径'),
+          path: z.string().optional().describe('数据路径，支持点号访问嵌套属性，如 user.info.name'),
         },
       },
       async ({ path }) => {
@@ -106,10 +112,10 @@ export class PageTool {
     this.server.registerTool(
       'setPageData',
       {
-        title: 'setPageData',
-        description: '设置页面渲染数据',
+        title: '设置页面数据',
+        description: '设置当前页面实例的 data 数据，触发页面重新渲染。常用于模拟用户输入、修改页面状态或进行数据驱动测试。',
         inputSchema: {
-          data: z.record(z.string(), z.any()).describe('要改变的数据对象'),
+          data: z.record(z.string(), z.any()).describe('要设置的数据对象，键为 data 中的属性名，值为新的数据'),
         },
       },
       async ({ data }) => {
@@ -128,8 +134,8 @@ export class PageTool {
     this.server.registerTool(
       'getPageSize',
       {
-        title: 'getPageSize',
-        description: '获取页面大小',
+        title: '获取页面尺寸',
+        description: '获取当前页面的尺寸信息，包括页面宽度和高度（单位：px）。可用于验证页面布局、计算滚动区域或进行响应式测试。',
         inputSchema: {},
       },
       async () => {
@@ -148,8 +154,8 @@ export class PageTool {
     this.server.registerTool(
       'getScrollTop',
       {
-        title: 'getScrollTop',
-        description: '获取页面滚动位置',
+        title: '获取页面滚动位置',
+        description: '获取当前页面垂直滚动条的位置（单位：px）。可用于验证页面滚动状态或计算滚动距离。',
         inputSchema: {},
       },
       async () => {
@@ -168,11 +174,11 @@ export class PageTool {
     this.server.registerTool(
       'callPageMethod',
       {
-        title: 'callPageMethod',
-        description: '调用页面指定方法',
+        title: '调用页面方法',
+        description: '调用当前页面实例上定义的页面方法（如 onLoad、onShow、自定义方法等）。可用于触发页面生命周期或执行页面业务逻辑。',
         inputSchema: {
-          method: z.string().describe('需要调用的方法名'),
-          args: z.array(z.any()).optional().describe('方法参数'),
+          method: z.string().describe('要调用的页面方法名'),
+          args: z.array(z.any()).optional().describe('方法参数，按顺序传入'),
         },
       },
       async ({ method, args = [] }) => {

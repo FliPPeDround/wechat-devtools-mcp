@@ -7,8 +7,6 @@ export default defineConfig({
   dts: false,
   fixedExtension: true,
   clean: true,
-  external: [
-    'miniprogram-automator',
-  ],
+  minify: true,
   inlineOnly: false,
 })

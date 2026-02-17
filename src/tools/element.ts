@@ -1,14 +1,20 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import type Element from 'miniprogram-automator/out/Element'
 import type { ContextElement, CustomElement, InputElement, MovableViewElement, ScrollViewElement, SwiperElement } from 'miniprogram-automator/out/Element'
-import type MiniProgram from 'miniprogram-automator/out/MiniProgram'
+import automator from 'miniprogram-automator'
 import z from 'zod'
 
 export class ElementTool {
-  constructor(private miniProgram: MiniProgram, private server: McpServer) {}
+  constructor(private server: McpServer, private port: number) {}
 
   private async _getElement(selector: string): Promise<Element> {
-    const page = await this.miniProgram.currentPage()
+    const miniProgram = await automator.connect({
+      wsEndpoint: `ws://localhost:${this.port}`,
+    })
+    if (!miniProgram) {
+      throw new Error('请先使用 launch 工具启动并连接开发者工具，才能进行后续操作')
+    }
+    const page = await miniProgram.currentPage()
     if (!page) {
       throw new Error('当前没有打开的页面')
     }
@@ -30,10 +36,10 @@ export class ElementTool {
     this.server.registerTool(
       'getElementChild',
       {
-        title: 'getElementChild',
-        description: '获取指定元素的子元素',
+        title: '获取子元素',
+        description: '获取指定元素的第一个子元素。常用于查看容器元素的直接子节点结构。',
         inputSchema: {
-          selector: z.string().describe('元素选择器'),
+          selector: z.string().describe('父元素选择器'),
         },
       },
       async ({ selector }) => {
@@ -52,8 +58,8 @@ export class ElementTool {
     this.server.registerTool(
       'getElementSize',
       {
-        title: 'getElementSize',
-        description: '获取指定元素的大小',
+        title: '获取元素尺寸',
+        description: '获取指定元素的宽高尺寸（单位：px）。可用于验证 UI 布局、计算元素大小或进行视觉测试。',
         inputSchema: {
           selector: z.string().describe('元素选择器'),
         },
@@ -75,8 +81,8 @@ export class ElementTool {
     this.server.registerTool(
       'getElementOffset',
       {
-        title: 'getElementOffset',
-        description: '获取元素绝对位置',
+        title: '获取元素位置',
+        description: '获取指定元素相对于页面左上角的绝对位置坐标（单位：px）。可用于验证元素定位、计算布局或进行点击坐标测试。',
         inputSchema: {
           selector: z.string().describe('元素选择器'),
         },
@@ -98,8 +104,8 @@ export class ElementTool {
     this.server.registerTool(
       'getElementText',
       {
-        title: 'getElementText',
-        description: '获取元素文本',
+        title: '获取元素文本',
+        description: '获取指定元素的文本内容，即元素innerText的值。可用于验证按钮文字、标签文本或提取展示内容。',
         inputSchema: {
           selector: z.string().describe('元素选择器'),
         },
@@ -121,11 +127,11 @@ export class ElementTool {
     this.server.registerTool(
       'getElementAttribute',
       {
-        title: 'getElementAttribute',
-        description: '获取元素特性（标签上的值）',
+        title: '获取元素特性',
+        description: '获取指定元素的 HTML 属性值（特性），如 id、class、src、disabled 等。可用于验证元素的属性配置或提取链接地址等。',
         inputSchema: {
           selector: z.string().describe('元素选择器'),
-          name: z.string().describe('特性名'),
+          name: z.string().describe('特性名称，如 id、class、src'),
         },
       },
       async ({ selector, name }) => {
@@ -145,11 +151,11 @@ export class ElementTool {
     this.server.registerTool(
       'getElementProperty',
       {
-        title: 'getElementProperty',
-        description: '获取元素属性（如 input 的 value 值）',
+        title: '获取元素属性',
+        description: '获取指定元素的 JavaScript 属性值（Property），如 input 元素的 value、checkbox 的 checked 状态等。与 attribute 的区别是 property 是 DOM 对象上的实际值。',
         inputSchema: {
           selector: z.string().describe('元素选择器'),
-          name: z.string().describe('属性名'),
+          name: z.string().describe('属性名称，如 input 用 value，checkbox 用 checked'),
         },
       },
       async ({ selector, name }) => {
@@ -169,8 +175,8 @@ export class ElementTool {
     this.server.registerTool(
       'getElementWxml',
       {
-        title: 'getElementWxml',
-        description: '获取元素 WXML（不含元素本身）',
+        title: '获取元素 WXML',
+        description: '获取指定元素的 WXML 结构（不包含元素本身，仅包含子节点）。可用于查看小程序组件的模板结构或调试渲染问题。',
         inputSchema: {
           selector: z.string().describe('元素选择器'),
         },
@@ -192,8 +198,8 @@ export class ElementTool {
     this.server.registerTool(
       'getElementOuterWxml',
       {
-        title: 'getElementOuterWxml',
-        description: '获取元素 WXML（包含元素本身）',
+        title: '获取完整 WXML',
+        description: '获取指定元素的完整 WXML 结构（包含元素本身及其所有子节点）。可用于查看组件完整结构或提取组件代码。',
         inputSchema: {
           selector: z.string().describe('元素选择器'),
         },
@@ -215,8 +221,8 @@ export class ElementTool {
     this.server.registerTool(
       'getElementValue',
       {
-        title: 'getElementValue',
-        description: '获取元素值',
+        title: '获取元素值',
+        description: '获取表单元素的值，如 input、textarea 的输入内容，或 switch、checkbox 的选中状态。用于验证用户输入或表单状态。',
         inputSchema: {
           selector: z.string().describe('元素选择器'),
         },
@@ -238,11 +244,11 @@ export class ElementTool {
     this.server.registerTool(
       'getElementStyle',
       {
-        title: 'getElementStyle',
-        description: '获取元素样式值',
+        title: '获取元素样式',
+        description: '获取指定元素的 CSS 样式值，如 color、font-size、display 等。可用于验证元素样式是否正确或调试样式问题。',
         inputSchema: {
           selector: z.string().describe('元素选择器'),
-          name: z.string().describe('样式名'),
+          name: z.string().describe('CSS 属性名，如 color、font-size、background'),
         },
       },
       async ({ selector, name }) => {
@@ -262,8 +268,8 @@ export class ElementTool {
     this.server.registerTool(
       'tapElement',
       {
-        title: 'tapElement',
-        description: '点击元素',
+        title: '点击元素',
+        description: '模拟用户点击指定元素。用于自动化测试中模拟用户交互，如点击按钮、链接或其他可点击元素。',
         inputSchema: {
           selector: z.string().describe('元素选择器'),
         },
@@ -285,8 +291,8 @@ export class ElementTool {
     this.server.registerTool(
       'longpressElement',
       {
-        title: 'longpressElement',
-        description: '长按元素',
+        title: '长按元素',
+        description: '模拟用户长按指定元素（默认 500ms）。常用于触发上下文菜单、右键操作或长按反馈效果。',
         inputSchema: {
           selector: z.string().describe('元素选择器'),
         },
@@ -308,12 +314,12 @@ export class ElementTool {
     this.server.registerTool(
       'touchstartElement',
       {
-        title: 'touchstartElement',
-        description: '手指开始触摸元素',
+        title: '触摸开始',
+        description: '模拟手指开始触摸元素。用于模拟复杂触摸交互，如手势识别、拖拽操作等。需要配合 touchmoveElement 和 touchendElement 使用。',
         inputSchema: {
           selector: z.string().describe('元素选择器'),
           touches: z.array(z.object({
-            identifier: z.number().describe('触摸点标识符'),
+            identifier: z.number().describe('触摸点标识符，区分多指触摸'),
             pageX: z.number().describe('触摸点在页面中的 X 坐标'),
             pageY: z.number().describe('触摸点在页面中的 Y 坐标'),
             clientX: z.number().describe('触摸点在客户端中的 X 坐标'),
@@ -345,23 +351,23 @@ export class ElementTool {
     this.server.registerTool(
       'touchmoveElement',
       {
-        title: 'touchmoveElement',
-        description: '手指触摸元素后移动',
+        title: '触摸移动',
+        description: '模拟手指触摸元素后移动（拖拽）。用于模拟用户拖拽滑动、长按后拖动等场景。需要配合 touchstartElement 和 touchendElement 使用。',
         inputSchema: {
           selector: z.string().describe('元素选择器'),
           touches: z.array(z.object({
-            identifier: z.number(),
-            pageX: z.number(),
-            pageY: z.number(),
-            clientX: z.number(),
-            clientY: z.number(),
+            identifier: z.number().describe('触摸点标识符'),
+            pageX: z.number().describe('触摸点在页面中的 X 坐标'),
+            pageY: z.number().describe('触摸点在页面中的 Y 坐标'),
+            clientX: z.number().describe('触摸点在客户端中的 X 坐标'),
+            clientY: z.number().describe('触摸点在客户端中的 Y 坐标'),
           })).describe('触摸点信息数组'),
           changeTouches: z.array(z.object({
-            identifier: z.number(),
-            pageX: z.number(),
-            pageY: z.number(),
-            clientX: z.number(),
-            clientY: z.number(),
+            identifier: z.number().describe('变化的触摸点标识符'),
+            pageX: z.number().describe('变化的触摸点在页面中的 X 坐标'),
+            pageY: z.number().describe('变化的触摸点在页面中的 Y 坐标'),
+            clientX: z.number().describe('变化的触摸点在客户端中的 X 坐标'),
+            clientY: z.number().describe('变化的触摸点在客户端中的 Y 坐标'),
           })).describe('变化的触摸点信息数组'),
         },
       },
@@ -382,23 +388,23 @@ export class ElementTool {
     this.server.registerTool(
       'touchendElement',
       {
-        title: 'touchendElement',
-        description: '手指结束触摸元素',
+        title: '触摸结束',
+        description: '模拟手指结束触摸元素。用于完成触摸交互序列。需要配合 touchstartElement 和 touchmoveElement 使用。',
         inputSchema: {
           selector: z.string().describe('元素选择器'),
           touches: z.array(z.object({
-            identifier: z.number(),
-            pageX: z.number(),
-            pageY: z.number(),
-            clientX: z.number(),
-            clientY: z.number(),
+            identifier: z.number().describe('触摸点标识符'),
+            pageX: z.number().describe('触摸点在页面中的 X 坐标'),
+            pageY: z.number().describe('触摸点在页面中的 Y 坐标'),
+            clientX: z.number().describe('触摸点在客户端中的 X 坐标'),
+            clientY: z.number().describe('触摸点在客户端中的 Y 坐标'),
           })).describe('触摸点信息数组'),
           changeTouches: z.array(z.object({
-            identifier: z.number(),
-            pageX: z.number(),
-            pageY: z.number(),
-            clientX: z.number(),
-            clientY: z.number(),
+            identifier: z.number().describe('变化的触摸点标识符'),
+            pageX: z.number().describe('变化的触摸点在页面中的 X 坐标'),
+            pageY: z.number().describe('变化的触摸点在页面中的 Y 坐标'),
+            clientX: z.number().describe('变化的触摸点在客户端中的 X 坐标'),
+            clientY: z.number().describe('变化的触摸点在客户端中的 Y 坐标'),
           })).describe('变化的触摸点信息数组'),
         },
       },
@@ -419,12 +425,12 @@ export class ElementTool {
     this.server.registerTool(
       'triggerElement',
       {
-        title: 'triggerElement',
-        description: '触发元素事件（无法触发 tap、longpress 等用户操作事件）',
+        title: '触发元素事件',
+        description: '触发指定元素的指定事件（如 input、change、focus、blur 等）。无法触发 tap、longpress 等用户操作事件，这些需要用 tapElement 或 longpressElement。',
         inputSchema: {
           selector: z.string().describe('元素选择器'),
-          type: z.string().describe('触发事件类型'),
-          detail: z.record(z.string(), z.any()).optional().describe('触发事件时传递的 detail 值'),
+          type: z.string().describe('事件类型，如 input、change、focus、blur、tap'),
+          detail: z.record(z.string(), z.any()).optional().describe('事件触发的 detail 数据'),
         },
       },
       async ({ selector, type, detail }) => {
@@ -444,11 +450,11 @@ export class ElementTool {
     this.server.registerTool(
       'inputElement',
       {
-        title: 'inputElement',
-        description: '输入文本（仅 input、textarea 组件可用）',
+        title: '输入文本',
+        description: '向 input 或 textarea 元素输入文本内容。用于模拟用户输入、填写表单或测试输入验证逻辑。',
         inputSchema: {
-          selector: z.string().describe('元素选择器'),
-          value: z.string().describe('需要输入的文本'),
+          selector: z.string().describe('输入框元素选择器'),
+          value: z.string().describe('要输入的文本内容'),
         },
       },
       async ({ selector, value }) => {
@@ -476,12 +482,12 @@ export class ElementTool {
     this.server.registerTool(
       'callElementMethod',
       {
-        title: 'callElementMethod',
-        description: '调用组件实例指定方法（仅自定义组件可用）',
+        title: '调用组件方法',
+        description: '调用自定义组件实例上定义的方法。仅适用于自定义组件（使用 Component 构造器创建），普通 view、text 等基础组件不支持。',
         inputSchema: {
-          selector: z.string().describe('元素选择器'),
-          method: z.string().describe('需要调用的方法名'),
-          args: z.array(z.any()).optional().describe('方法参数'),
+          selector: z.string().describe('自定义组件元素选择器'),
+          method: z.string().describe('要调用的方法名'),
+          args: z.array(z.any()).optional().describe('方法参数，按顺序传入'),
         },
       },
       async ({ selector, method, args }) => {
@@ -509,11 +515,11 @@ export class ElementTool {
     this.server.registerTool(
       'getElementData',
       {
-        title: 'getElementData',
-        description: '获取组件实例渲染数据（仅自定义组件可用）',
+        title: '获取组件数据',
+        description: '获取自定义组件实例的 data 数据（渲染数据）。仅适用于自定义组件，可用于验证组件内部状态或读取组件数据。',
         inputSchema: {
-          selector: z.string().describe('元素选择器'),
-          path: z.string().optional().describe('数据路径'),
+          selector: z.string().describe('自定义组件元素选择器'),
+          path: z.string().optional().describe('数据路径，支持点号访问嵌套属性'),
         },
       },
       async ({ selector, path }) => {
@@ -541,11 +547,11 @@ export class ElementTool {
     this.server.registerTool(
       'setElementData',
       {
-        title: 'setElementData',
-        description: '设置组件实例渲染数据（仅自定义组件可用）',
+        title: '设置组件数据',
+        description: '设置自定义组件实例的 data 数据，触发组件重新渲染。仅适用于自定义组件，可用于修改组件内部状态或模拟数据变化。',
         inputSchema: {
-          selector: z.string().describe('元素选择器'),
-          data: z.record(z.string(), z.any()).describe('要改变的数据'),
+          selector: z.string().describe('自定义组件元素选择器'),
+          data: z.record(z.string(), z.any()).describe('要设置的数据对象，键为 data 中的属性名'),
         },
       },
       async ({ selector, data }) => {
@@ -573,12 +579,12 @@ export class ElementTool {
     this.server.registerTool(
       'callContextMethod',
       {
-        title: 'callContextMethod',
-        description: '调用上下文 Context 对象方法（仅 video 组件可用）',
+        title: '调用 Video 上下文方法',
+        description: '调用 video 组件的 Context（上下文）对象方法，如 play、pause、seek 等。仅适用于 video 组件，可用于控制视频播放。',
         inputSchema: {
-          selector: z.string().describe('元素选择器'),
-          method: z.string().describe('需要调用的方法名'),
-          args: z.array(z.any()).optional().describe('方法参数'),
+          selector: z.string().describe('video 元素选择器'),
+          method: z.string().describe('要调用的方法名，如 play、pause、seek'),
+          args: z.array(z.any()).optional().describe('方法参数，按顺序传入'),
         },
       },
       async ({ selector, method, args }) => {
@@ -606,10 +612,10 @@ export class ElementTool {
     this.server.registerTool(
       'getScrollWidth',
       {
-        title: 'getScrollWidth',
-        description: '获取滚动宽度（仅 scroll-view 组件可用）',
+        title: '获取滚动宽度',
+        description: '获取 scroll-view 组件的滚动内容宽度（单位：px）。仅适用于 scroll-view 组件，用于获取可滚动区域的宽度。',
         inputSchema: {
-          selector: z.string().describe('元素选择器'),
+          selector: z.string().describe('scroll-view 元素选择器'),
         },
       },
       async ({ selector }) => {
@@ -637,10 +643,10 @@ export class ElementTool {
     this.server.registerTool(
       'getScrollHeight',
       {
-        title: 'getScrollHeight',
-        description: '获取滚动高度（仅 scroll-view 组件可用）',
+        title: '获取滚动高度',
+        description: '获取 scroll-view 组件的滚动内容高度（单位：px）。仅适用于 scroll-view 组件，用于获取可滚动区域的高度。',
         inputSchema: {
-          selector: z.string().describe('元素选择器'),
+          selector: z.string().describe('scroll-view 元素选择器'),
         },
       },
       async ({ selector }) => {
@@ -668,12 +674,12 @@ export class ElementTool {
     this.server.registerTool(
       'scrollTo',
       {
-        title: 'scrollTo',
-        description: '滚动到指定位置（仅 scroll-view 组件可用）',
+        title: '滚动到指定位置',
+        description: '将 scroll-view 组件滚动到指定坐标位置。仅适用于 scroll-view 组件，可用于模拟用户滚动或测试滚动行为。',
         inputSchema: {
-          selector: z.string().describe('元素选择器'),
-          x: z.number().describe('横向滚动位置'),
-          y: z.number().describe('纵向滚动位置'),
+          selector: z.string().describe('scroll-view 元素选择器'),
+          x: z.number().describe('横向滚动位置，单位 px'),
+          y: z.number().describe('纵向滚动位置，单位 px'),
         },
       },
       async ({ selector, x, y }) => {
@@ -701,11 +707,11 @@ export class ElementTool {
     this.server.registerTool(
       'swipeTo',
       {
-        title: 'swipeTo',
-        description: '滑动到指定滑块（仅 swiper 组件可用）',
+        title: '切换 Swiper 滑块',
+        description: '将 swiper 组件滑动到指定轮播位置（切换轮播图）。仅适用于 swiper 组件，可用于自动切换轮播图或验证轮播功能。',
         inputSchema: {
-          selector: z.string().describe('元素选择器'),
-          index: z.number().describe('目标滑块的 index'),
+          selector: z.string().describe('swiper 元素选择器'),
+          index: z.number().describe('目标滑块的索引值，从 0 开始'),
         },
       },
       async ({ selector, index }) => {
@@ -733,12 +739,12 @@ export class ElementTool {
     this.server.registerTool(
       'moveTo',
       {
-        title: 'moveTo',
-        description: '移动视图容器（仅 movable-view 组件可用）',
+        title: '移动可移动视图',
+        description: '将 movable-view 组件移动到指定坐标位置。仅适用于 movable-view 组件，可用于模拟拖拽移动或测试可移动区域。',
         inputSchema: {
-          selector: z.string().describe('元素选择器'),
-          x: z.number().describe('x 坐标'),
-          y: z.number().describe('y 坐标'),
+          selector: z.string().describe('movable-view 元素选择器'),
+          x: z.number().describe('目标 X 坐标'),
+          y: z.number().describe('目标 Y 坐标'),
         },
       },
       async ({ selector, x, y }) => {

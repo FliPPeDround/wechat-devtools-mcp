@@ -7,6 +7,7 @@ export default antfu(
     rules: {
       'ts/explicit-function-return-type': 'off',
       'antfu/consistent-list-newline': 'off',
+      'no-new': 'off',
     },
   },
 )

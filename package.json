@@ -1,7 +1,7 @@
 {
   "name": "wechat-devtools-mcp",
   "type": "module",
-  "version": "0.0.7",
+  "version": "0.0.1",
   "packageManager": "pnpm@10.6.2",
   "description": "微信开发者工具自动化的MCP服务",
   "author": "FliPPeDround <flippedround@qq.com>",
@@ -54,6 +54,10 @@
     "test": "vitest",
     "prepare": "simple-git-hooks"
   },
+  "dependencies": {
+    "miniprogram-automator": "^0.12.1",
+    "miniprogram-mp-ci": "^1.0.7"
+  },
   "devDependencies": {
     "@antfu/eslint-config": "^7.0.1",
     "@antfu/utils": "^9.3.0",
@@ -68,8 +72,8 @@
     "eslint": "^9.39.2",
     "lint-staged": "^16.2.7",
     "minimist": "^1.2.8",
-    "miniprogram-automator": "^0.12.1",
     "simple-git-hooks": "^2.13.1",
+    "tinyexec": "^1.0.2",
     "tsdown": "^0.20.0-beta.3",
     "typescript": "^5.9.3",
     "vitest": "^4.0.17",
